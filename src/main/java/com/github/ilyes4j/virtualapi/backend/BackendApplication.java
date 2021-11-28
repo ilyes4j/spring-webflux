@@ -19,7 +19,7 @@ public class BackendApplication {
         ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(handler);
 
         DisposableServer server = HttpServer.create()
-                .host("localhost")
+                .host("0.0.0.0")
                 .port(8080)
                 .handle(adapter)
                 .bindNow();

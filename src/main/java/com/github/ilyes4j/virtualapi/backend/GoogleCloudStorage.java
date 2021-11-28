@@ -2,12 +2,11 @@ package com.github.ilyes4j.virtualapi.backend;
 
 import com.google.auth.Credentials;
 import com.google.cloud.storage.StorageOptions;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
@@ -19,42 +18,28 @@ public class GoogleCloudStorage {
 
     private static final String CLOUD_STORAGE_URL = "https://storage.googleapis.com/";
 
-    private final OkHttpClient client;
-    private final String dlPartialUrl;
-    private final Credentials credentials;
+    private final WebClient webClient;
 
     public GoogleCloudStorage(String bucketId) throws IOException {
         StorageOptions options = StorageOptions.newBuilder().build();
 
-        credentials = options.getScopedCredentials();
-        credentials.getRequestMetadata(null);
+        Credentials credentials = options.getScopedCredentials();
 
-        client = new OkHttpClient.Builder().build();
-        dlPartialUrl = CLOUD_STORAGE_URL + bucketId;
+        String dlPartialUrl = CLOUD_STORAGE_URL + bucketId;
+
+        Map<String, List<String>> headers = credentials.getRequestMetadata(null);
+        WebClient.Builder builder = WebClient.builder().baseUrl(dlPartialUrl);
+        headers.forEach((key, value) -> builder.defaultHeader(key, value.toArray(new String[0])));
+        webClient = builder.build();
     }
 
-    public Mono<ServerResponse> fetchContent(String rawMetadata) {
+    public Mono<ServerResponse> fetchContentAsync(String rawMetadata) {
 
-        try {
-            //noinspection BlockingMethodInNonBlockingContext
-            Map<String, List<String>> headers = credentials.getRequestMetadata(null);
-
-            Request.Builder requestBuilder = new Request.Builder();
-            headers.forEach((key, value) -> requestBuilder.header(key, value.get(0)));
-            Request request = requestBuilder.url(dlPartialUrl + rawMetadata).build();
-
-            //noinspection BlockingMethodInNonBlockingContext
-            Response response = client.newCall(request).execute();
-            ResponseBody body = response.body();
-            //noinspection BlockingMethodInNonBlockingContext
-            byte[] data = body != null ? body.bytes() : null;
-
-            //noinspection ConstantConditions
-            return ServerResponse.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(data));
-        } catch (IOException e) {
-            return null;
-        }
+        return webClient.method(HttpMethod.GET)
+                .uri(rawMetadata)
+                .exchangeToMono(clientResponse -> clientResponse.bodyToMono(DataBuffer.class))
+                .flatMap(s -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(s)));
     }
 }

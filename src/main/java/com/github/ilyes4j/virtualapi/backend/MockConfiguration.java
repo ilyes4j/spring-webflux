@@ -31,7 +31,7 @@ public class MockConfiguration {
     public RouterFunction<ServerResponse> route(MockController mockController) {
 
         return RouterFunctions.route(
-                GET("/rest/**").and(accept(MediaType.APPLICATION_JSON)),
+                GET("/**").and(accept(MediaType.APPLICATION_JSON)),
                 mockController::hello
         );
     }

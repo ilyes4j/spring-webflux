@@ -18,6 +18,6 @@ public class MockController {
 
     @Nonnull
     public Mono<ServerResponse> hello(ServerRequest request) {
-        return storage.fetchContent(request.path().substring(5));
+        return storage.fetchContentAsync(request.path());
     }
 }
