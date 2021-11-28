@@ -8,29 +8,31 @@ import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
+import java.io.IOException;
+
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
 import static org.springframework.web.reactive.function.server.RequestPredicates.accept;
 
 @EnableWebFlux
 @Configuration(proxyBeanMethods = false)
-public class GreetingConfiguration {
+public class MockConfiguration {
 
     @Bean
-    public GreetingService getGreetingService() {
-        return new GreetingService();
+    public GoogleCloudStorage getGoogleCloudStorage() throws IOException {
+        return new GoogleCloudStorage("virtual-api-com-db");
     }
 
     @Bean
-    public GreetingController getGreetingHandler(GreetingService service) {
-        return new GreetingController(service);
+    public MockController getGreetingHandler(GoogleCloudStorage storage) {
+        return new MockController(storage);
     }
 
     @Bean
-    public RouterFunction<ServerResponse> route(GreetingController greetingController) {
+    public RouterFunction<ServerResponse> route(MockController mockController) {
 
         return RouterFunctions.route(
-                GET("/hello").and(accept(MediaType.APPLICATION_JSON)),
-                greetingController::hello
+                GET("/rest/**").and(accept(MediaType.APPLICATION_JSON)),
+                mockController::hello
         );
     }
 }

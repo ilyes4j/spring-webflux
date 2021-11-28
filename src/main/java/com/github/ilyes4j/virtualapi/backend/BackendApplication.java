@@ -14,7 +14,7 @@ public class BackendApplication {
 
         final long startTime = System.currentTimeMillis();
 
-        ApplicationContext context = new AnnotationConfigApplicationContext(GreetingConfiguration.class);
+        ApplicationContext context = new AnnotationConfigApplicationContext(MockConfiguration.class);
         HttpHandler handler = WebHttpHandlerBuilder.applicationContext(context).build();
         ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(handler);
 

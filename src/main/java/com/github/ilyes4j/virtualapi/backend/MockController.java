@@ -5,16 +5,19 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Nonnull;
+
 @Component
-public class GreetingController {
+public class MockController {
 
-    private final GreetingService service;
+    private final GoogleCloudStorage storage;
 
-    public GreetingController(GreetingService service) {
-        this.service = service;
+    public MockController(GoogleCloudStorage storage) {
+        this.storage = storage;
     }
 
+    @Nonnull
     public Mono<ServerResponse> hello(ServerRequest request) {
-        return service.greet();
+        return storage.fetchContent(request.path().substring(5));
     }
 }
