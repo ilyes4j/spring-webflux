@@ -6,6 +6,7 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
@@ -13,10 +14,12 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalLong;
 
 public class GoogleCloudStorage {
 
-    private static final String CLOUD_STORAGE_URL = "https://storage.googleapis.com/";
+    private static final String CLOUD_STORAGE_URL = "http://storage.googleapis.com/";
 
     private final WebClient webClient;
 
@@ -35,11 +38,28 @@ public class GoogleCloudStorage {
 
     public Mono<ServerResponse> fetchContentAsync(String rawMetadata) {
 
+        //noinspection deprecation
         return webClient.method(HttpMethod.GET)
                 .uri(rawMetadata)
-                .exchangeToMono(clientResponse -> clientResponse.bodyToMono(DataBuffer.class))
-                .flatMap(s -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(s)));
+                .exchange()
+                .flatMap(clientResponse -> {
+
+                            ServerResponse.BodyBuilder builder = ServerResponse.status(clientResponse.statusCode());
+
+                            ClientResponse.Headers clientHeaders = clientResponse.headers();
+
+                            Optional<MediaType> contentType = clientHeaders.contentType();
+                            if (contentType.isPresent()) {
+                                builder = builder.contentType(contentType.get());
+                            }
+
+                            OptionalLong contentLength = clientHeaders.contentLength();
+                            if (contentLength.isPresent()) {
+                                builder = builder.contentLength(contentLength.getAsLong());
+                            }
+
+                            return builder.body(BodyInserters.fromDataBuffers(clientResponse.bodyToFlux(DataBuffer.class)));
+                        }
+                );
     }
 }
