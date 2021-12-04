@@ -12,10 +12,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalLong;
+import java.util.*;
 
 public class GoogleCloudStorage {
 
@@ -24,24 +21,27 @@ public class GoogleCloudStorage {
 
     private final WebClient webClient;
 
-    public GoogleCloudStorage(String bucketId) throws IOException {
+    private final Credentials credentials;
+
+    public GoogleCloudStorage(String bucketId) {
         StorageOptions options = StorageOptions.newBuilder().build();
 
-        Credentials credentials = options.getScopedCredentials();
+        credentials = options.getScopedCredentials();
 
         String dlPartialUrl = CLOUD_STORAGE_URL + bucketId;
 
-        Map<String, List<String>> headers = credentials.getRequestMetadata(null);
         WebClient.Builder builder = WebClient.builder().baseUrl(dlPartialUrl);
-        headers.forEach((key, value) -> builder.defaultHeader(key, value.toArray(new String[0])));
         webClient = builder.build();
     }
 
     public Mono<ServerResponse> fetchContentAsync(String rawMetadata) {
 
+        Map<String, List<String>> headers = getRequestMetadata();
+
         //noinspection deprecation
         return webClient.method(HttpMethod.GET)
                 .uri(rawMetadata)
+                .headers(httpHeaders -> headers.forEach(httpHeaders::addAll))
                 .exchange()
                 .flatMap(clientResponse -> {
 
@@ -62,5 +62,13 @@ public class GoogleCloudStorage {
                             return builder.body(BodyInserters.fromDataBuffers(clientResponse.bodyToFlux(DataBuffer.class)));
                         }
                 );
+    }
+
+    private Map<String, List<String>> getRequestMetadata() {
+        try {
+            return credentials.getRequestMetadata(null);
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
     }
 }
