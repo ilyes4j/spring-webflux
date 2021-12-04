@@ -14,27 +14,38 @@
         <maven.compiler.target>8</maven.compiler.target>
         <build.filename.path>${project.build.directory}/${project.build.finalName}</build.filename.path>
         <appengine.staging.location>${project.build.directory}/appengine-staging</appengine.staging.location>
+        <logback.version>1.2.7</logback.version>
+        <spring.version>5.3.13</spring.version>
+        <netty.version>1.0.13</netty.version>
+        <jackson.version>2.13.0</jackson.version>
+        <okhttp.version>3.14.9</okhttp.version>
     </properties>
 
     <dependencies>
 
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webflux</artifactId>
-            <version>5.3.13</version>
+            <version>${spring.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.3.13</version>
+            <version>${spring.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.projectreactor.netty/reactor-netty -->
         <dependency>
             <groupId>io.projectreactor.netty</groupId>
             <artifactId>reactor-netty</artifactId>
-            <version>1.0.13</version>
+            <version>${netty.version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
@@ -42,13 +53,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.0</version>
-        </dependency>
-
-        <!-- https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver -->
-        <dependency>
-            <groupId>com.squareup.okhttp3</groupId>
-            <artifactId>okhttp</artifactId>
-            <version>3.14.9</version>
         </dependency>
 
         <dependency>
