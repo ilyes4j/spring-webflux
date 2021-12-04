@@ -12,8 +12,6 @@ public class BackendApplication {
 
     public static void main(String[] args) {
 
-        final long startTime = System.currentTimeMillis();
-
         ApplicationContext context = new AnnotationConfigApplicationContext(MockConfiguration.class);
         HttpHandler handler = WebHttpHandlerBuilder.applicationContext(context).build();
         ReactorHttpHandlerAdapter adapter = new ReactorHttpHandlerAdapter(handler);
@@ -23,9 +21,6 @@ public class BackendApplication {
                 .port(8080)
                 .handle(adapter)
                 .bindNow();
-
-        final long endTime = System.currentTimeMillis();
-        System.out.println("Total execution time: " + (endTime - startTime));
 
         server.onDispose().block();
     }

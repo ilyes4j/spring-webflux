@@ -8,16 +8,10 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Nonnull;
 
 @Component
-public class MockController {
-
-    private final GoogleCloudStorage storage;
-
-    public MockController(GoogleCloudStorage storage) {
-        this.storage = storage;
-    }
+public class HealthController {
 
     @Nonnull
-    public Mono<ServerResponse> mock(ServerRequest request) {
-        return storage.fetchContentAsync(request.path());
+    public Mono<ServerResponse> health(ServerRequest ignoredRequest) {
+        return ServerResponse.ok().build();
     }
 }
