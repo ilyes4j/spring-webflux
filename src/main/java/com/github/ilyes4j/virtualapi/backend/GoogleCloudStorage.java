@@ -19,6 +19,7 @@ import java.util.OptionalLong;
 
 public class GoogleCloudStorage {
 
+    @SuppressWarnings("HttpUrlsUsage")
     private static final String CLOUD_STORAGE_URL = "http://storage.googleapis.com/";
 
     private final WebClient webClient;
