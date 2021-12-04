@@ -18,7 +18,7 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 public class MockConfiguration {
 
     @Bean
-    public GoogleCloudStorage getGoogleCloudStorage() throws IOException {
+    public GoogleCloudStorage getGoogleCloudStorage() {
         return new GoogleCloudStorage("virtual-api-com-db");
     }
 
