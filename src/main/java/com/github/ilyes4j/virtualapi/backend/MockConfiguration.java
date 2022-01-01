@@ -1,5 +1,6 @@
 package com.github.ilyes4j.virtualapi.backend;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.config.EnableWebFlux;
@@ -10,8 +11,8 @@ import org.springframework.web.reactive.function.server.*;
 public class MockConfiguration {
 
     @Bean
-    public GoogleCloudStorage getGoogleCloudStorage() {
-        return new GoogleCloudStorage("virtual-api-com-db");
+    public GoogleCloudStorage getGoogleCloudStorage(@Value("${maxClientCnx:500}") int maxClientCnx) {
+        return new GoogleCloudStorage("virtual-api-com-db", maxClientCnx);
     }
 
     @Bean

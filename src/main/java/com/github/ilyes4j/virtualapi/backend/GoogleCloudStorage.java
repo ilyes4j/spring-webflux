@@ -5,11 +5,14 @@ import com.google.cloud.storage.StorageOptions;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
 
 import java.io.IOException;
 import java.util.*;
@@ -23,14 +26,20 @@ public class GoogleCloudStorage {
 
     private final Credentials credentials;
 
-    public GoogleCloudStorage(String bucketId) {
+    public GoogleCloudStorage(String bucketId, int maxClientCnx) {
         StorageOptions options = StorageOptions.newBuilder().build();
 
         credentials = options.getScopedCredentials();
 
         String dlPartialUrl = CLOUD_STORAGE_URL + bucketId;
 
-        WebClient.Builder builder = WebClient.builder().baseUrl(dlPartialUrl);
+        ConnectionProvider connectionProvider = ConnectionProvider.builder("ConnectionPool")
+                .maxConnections(maxClientCnx)
+                .build();
+        HttpClient client = HttpClient.create(connectionProvider);
+        ReactorClientHttpConnector clientHttpConnector = new ReactorClientHttpConnector(client);
+
+        WebClient.Builder builder = WebClient.builder().baseUrl(dlPartialUrl).clientConnector(clientHttpConnector);
         webClient = builder.build();
     }
 
